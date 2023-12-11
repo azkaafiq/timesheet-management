@@ -1,0 +1,99 @@
+<div class="p-5">
+    <div class="card p-3 mx-auto mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-center justify-content-center">
+                <div class="col-1">
+                    <label for="task" class="col-form-label text-center">Task</label>
+                </div>
+                <div class="col-6">
+                    <input type="text" id="task" class="form-control">
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-3">
+            <button class="btn btn-primary mx-3">Search</button>
+            <button class="btn btn-primary mx-3" (click)="open(content)">Create</button>
+        </div>
+    </div>
+
+    <div class="card p-3 mx-auto">
+        <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Project</th>
+                <th scope="col">Task</th>
+                <th scope="col">Assigned To</th>
+                <th scope="col">From</th>
+                <th scope="col">To</th>
+                <th scope="col">Status</th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let timesheet of timesheets">
+                    <td>{{ timesheet.project }}</td>
+                    <td>{{ timesheet.task }}</td>
+                    <td>{{ timesheet.assignedTo }}</td>
+                    <td>{{ timesheet.fromDate }}</td>
+                    <td>{{ timesheet.toDate }}</td>
+                    <td>{{ timesheet.status }}</td>
+                    <td>
+                        <button class="btn-edit mx-2" (click)="editTimesheet(timesheet)">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-delete mx-2" (click)="deleteTimesheet(timesheet)">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- modal -->
+<ng-template #content let-c="close" let-d="dismiss">
+    <div class="modal-header">
+      <h4 class="modal-title" id="modal-basic-title">Timesheet Entry</h4>
+    </div>
+    <div class="modal-body">
+      <form #timesheetForm="ngForm" (ngSubmit)="saveTimesheet(timesheetForm)">
+        <div class="mb-3">
+          <label for="project" class="form-label">Project</label>
+          <input type="text" class="form-control" id="project" name="project" [(ngModel)]="timesheet.project" required>
+        </div>
+        <div class="mb-3">
+          <label for="task" class="form-label">Task</label>
+          <input type="text" class="form-control" id="task" name="task" [(ngModel)]="timesheet.task" required>
+        </div>
+        <div class="mb-3">
+            <label for="assignedTo" class="form-label">Assigned To</label>
+            <select class="form-select" id="assignedTo" name="assignedTo" [(ngModel)]="timesheet.assignedTo" required>
+              <option *ngFor="let user of users" [value]="user.id">{{ user.name }}</option>
+            </select>
+          </div>
+        <div class="mb-3">
+          <label for="fromDate" class="form-label">From</label>
+          <input type="date" class="form-control" id="fromDate" name="fromDate" [(ngModel)]="timesheet.fromDate" required>
+        </div>
+        <div class="mb-3">
+          <label for="toDate" class="form-label">To</label>
+          <input type="date" class="form-control" id="toDate" name="toDate" [(ngModel)]="timesheet.toDate" required>
+        </div>
+        <div class="mb-3">
+          <label for="status" class="form-label">Status</label>
+          <select class="form-select" id="status" name="status" [(ngModel)]="timesheet.status" required>
+            <option value="Open">Open</option>
+            <option value="Closed">Closed</option>
+          </select>
+        </div>
+  
+        <div class="text-center p-4">
+          <button type="submit" class="btn btn-primary mx-3">Save</button>
+          <button type="button" class="btn btn-primary mx-3" (click)="d('Close click')">Close</button>
+        </div>
+      </form>
+    </div>
+  </ng-template>
+  
