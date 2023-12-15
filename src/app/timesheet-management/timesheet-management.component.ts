@@ -1,7 +1,9 @@
 // timesheet-management.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgbModal, NgbModalConfig } from '@ng-bootstrap/ng-bootstrap';
+import { NgForm } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { UserService } from 'src/service/user.service';
 
 @Component({
   selector: 'app-timesheet-management',
@@ -13,11 +15,17 @@ export class TimesheetManagementComponent implements OnInit {
   displayedColumns: string[] = ['project', 'task', 'assignedTo', 'fromDate', 'toDate', 'status'];
   timesheet: any;
   users: any[] = [];
+  editedTimesheet: any;
+
+  @ViewChild('content') content: any;
+  @ViewChild('editModal') editModal: any;
+  @ViewChild('timesheetForm') timesheetForm!: NgForm;
 
   constructor(
     config: NgbModalConfig,
     private modalService: NgbModal,
-    private http: HttpClient
+    private http: HttpClient,
+    private userService: UserService
   ) {
     config.backdrop = 'static';
     config.keyboard = false;
@@ -26,6 +34,7 @@ export class TimesheetManagementComponent implements OnInit {
   ngOnInit() {
     this.loadTimesheets();
     this.loadUsers();
+    this.timesheet = {};
   }
 
   open(content: any) {
@@ -33,18 +42,18 @@ export class TimesheetManagementComponent implements OnInit {
   }
 
   loadTimesheets() {
-    this.http.get<any[]>('http://localhost:8080/api/timesheets').subscribe(
+    this.http.get<any[]>('http://localhost:3000/timesheet').subscribe(
       (data) => {
         this.timesheets = data;
       },
       (error) => {
-        console.error('Error loading timesheets', error);
+        console.error('Error loading timesheet', error);
       }
     );
   }
 
   loadUsers() {
-    this.http.get<any[]>('http://localhost:8080/api/users').subscribe(
+    this.userService.getUsers().subscribe(
       (data) => {
         this.users = data;
       },
@@ -54,42 +63,64 @@ export class TimesheetManagementComponent implements OnInit {
     );
   }
 
-  createTimesheet() {
-    const newTimesheet = {
-      project: 'New Project',
-      task: 'New Task',
-      assignedTo: 'New User',
-      fromDate: '2023-01-01',
-      toDate: '2023-01-03',
-      status: 'Open',
-    };
-
-    this.http.post('http://localhost:8080/api/timesheets', newTimesheet).subscribe(
-      () => {
-        this.loadTimesheets();
-      },
-      (error) => {
-        console.error('Error creating timesheet', error);
-      }
-    );
-  }
-
-  saveTimesheet(form: any) {
-    // Perform any additional validation or processing here
+  createTimesheet(form: NgForm) {
+    console.log('Form values:', form.value);
     if (form.valid) {
-      // If the form is valid, create or update the timesheet
-      this.createTimesheet();
+      const newTimesheet = {
+        project: form.value.project,
+        task: form.value.task,
+        assignedTo: form.value.assignedTo,
+        fromDate: form.value.fromDate,
+        toDate: form.value.toDate,
+        status: form.value.status,
+      };
+  
+      this.http.post('http://localhost:3000/timesheet', newTimesheet).subscribe(
+        () => {
+          this.loadTimesheets();
+          this.modalService.dismissAll(); // Close the modal
+        },
+        (error) => {
+          console.error('Error creating timesheet', error);
+        }
+      );
+  
+      form.resetForm(); // Reset the form after submission
+    }
+  }
+  
+  saveTimesheet(form: any) {
+    if (form.valid) {
+      if (this.timesheet && this.timesheet.id) {
+        this.updateTimesheet();
+      } else {
+        this.createTimesheet(form);
+      }
       form.resetForm(); // Reset the form after submission
     }
   }
 
   editTimesheet(timesheet: any) {
-    // Add logic to handle editing a timesheet
-    console.log('Edit timesheet:', timesheet);
+    this.openEditModal(timesheet);
+  }
+
+  openEditModal(timesheet: any) {
+    this.editedTimesheet = { ...timesheet };
+    this.modalService.open(this.editModal, { size: 'lg' });
+  }
+
+  saveEditedTimesheet(form: any) {
+    if (form.valid) {
+      this.updateTimesheet();
+      form.resetForm();
+    }
+  }
+
+  updateTimesheet() {
+    console.log('Update timesheet:', this.editedTimesheet);
   }
 
   deleteTimesheet(timesheet: any) {
-    // Add logic to handle deleting a timesheet
     console.log('Delete timesheet:', timesheet);
   }
 }

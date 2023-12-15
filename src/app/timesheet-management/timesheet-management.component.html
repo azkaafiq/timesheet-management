@@ -41,7 +41,7 @@
                     <td>
                         <button class="btn-edit mx-2" (click)="editTimesheet(timesheet)">
                             <i class="fas fa-edit"></i>
-                        </button>
+                          </button>
                         <button class="btn-delete mx-2" (click)="deleteTimesheet(timesheet)">
                             <i class="fas fa-trash"></i>
                         </button>
@@ -52,48 +52,94 @@
     </div>
 </div>
 
-<!-- modal -->
+<!-- Create modal -->
 <ng-template #content let-c="close" let-d="dismiss">
     <div class="modal-header">
-      <h4 class="modal-title" id="modal-basic-title">Timesheet Entry</h4>
+        <h4 class="modal-title" id="modal-basic-title">Timesheet Entry</h4>
     </div>
     <div class="modal-body">
-      <form #timesheetForm="ngForm" (ngSubmit)="saveTimesheet(timesheetForm)">
+        <form #timesheetForm="ngForm" (ngSubmit)="createTimesheet(timesheetForm)">
+
+            <div class="mb-3">
+                <label for="project" class="form-label">Project</label>
+                <input type="text" class="form-control" id="project" name="project" [(ngModel)]="timesheet.project" required>
+            </div>
+            <div class="mb-3">
+                <label for="task" class="form-label">Task</label>
+                <input type="text" class="form-control" id="task" name="task" [(ngModel)]="timesheet.task" required>
+            </div>
+            <div class="mb-3">
+                <label for="assignedTo" class="form-label">Assigned To</label>
+                <select class="form-select" id="assignedTo" name="assignedTo" [(ngModel)]="timesheet.assignedTo" required>
+                    <option *ngFor="let user of users" [value]="user.id">{{ user.username }}</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="fromDate" class="form-label">From</label>
+                <input type="date" class="form-control" id="fromDate" name="fromDate" [(ngModel)]="timesheet.fromDate" required>
+            </div>
+            <div class="mb-3">
+                <label for="toDate" class="form-label">To</label>
+                <input type="date" class="form-control" id="toDate" name="toDate" [(ngModel)]="timesheet.toDate" required>
+            </div>
+            <div class="mb-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status" [(ngModel)]="timesheet.status" required>
+                    <option value="Open">Open</option>
+                    <option value="Closed">Closed</option>
+                </select>
+            </div>
+
+            <div class="text-center p-4">
+                <button type="submit" class="btn btn-primary mx-3">Save</button>
+                <button type="button" class="btn btn-primary mx-3" (click)="d('Close click')">Close</button>
+            </div>
+        </form>
+    </div>
+</ng-template>
+
+<!-- Edit modal -->
+<ng-template #editModal let-c="close" let-d="dismiss">
+    <div class="modal-header">
+        <h4 class="modal-title">Edit Timesheet</h4>
+    </div>
+    <div class="modal-body">
+        <form #editForm="ngForm" (ngSubmit)="saveEditedTimesheet(editForm)">
+        <!-- Editable fields -->
         <div class="mb-3">
-          <label for="project" class="form-label">Project</label>
-          <input type="text" class="form-control" id="project" name="project" [(ngModel)]="timesheet.project" required>
+            <label for="editProject" class="form-label">Project</label>
+            <input type="text" class="form-control" id="editProject" name="project" [(ngModel)]="editedTimesheet.project" required>
         </div>
         <div class="mb-3">
-          <label for="task" class="form-label">Task</label>
-          <input type="text" class="form-control" id="task" name="task" [(ngModel)]="timesheet.task" required>
+            <label for="editTask" class="form-label">Task</label>
+            <input type="text" class="form-control" id="editTask" name="task" [(ngModel)]="editedTimesheet.task" required>
         </div>
         <div class="mb-3">
-            <label for="assignedTo" class="form-label">Assigned To</label>
-            <select class="form-select" id="assignedTo" name="assignedTo" [(ngModel)]="timesheet.assignedTo" required>
-              <option *ngFor="let user of users" [value]="user.id">{{ user.name }}</option>
+            <label for="editAssignedTo" class="form-label">Assigned To</label>
+            <select class="form-select" id="editAssignedTo" name="assignedTo" [(ngModel)]="editedTimesheet.assignedTo" required>
+            <option *ngFor="let user of users" [value]="user.username">{{ user.username }}</option>
             </select>
-          </div>
-        <div class="mb-3">
-          <label for="fromDate" class="form-label">From</label>
-          <input type="date" class="form-control" id="fromDate" name="fromDate" [(ngModel)]="timesheet.fromDate" required>
         </div>
         <div class="mb-3">
-          <label for="toDate" class="form-label">To</label>
-          <input type="date" class="form-control" id="toDate" name="toDate" [(ngModel)]="timesheet.toDate" required>
+            <label for="editFromDate" class="form-label">From</label>
+            <input type="date" class="form-control" id="editFromDate" name="fromDate" [(ngModel)]="editedTimesheet.fromDate" required>
         </div>
         <div class="mb-3">
-          <label for="status" class="form-label">Status</label>
-          <select class="form-select" id="status" name="status" [(ngModel)]="timesheet.status" required>
+            <label for="editToDate" class="form-label">To</label>
+            <input type="date" class="form-control" id="editToDate" name="toDate" [(ngModel)]="editedTimesheet.toDate" required>
+        </div>
+        <div class="mb-3">
+            <label for="editStatus" class="form-label">Status</label>
+            <select class="form-select" id="editStatus" name="status" [(ngModel)]="editedTimesheet.status" required>
             <option value="Open">Open</option>
             <option value="Closed">Closed</option>
-          </select>
+            </select>
         </div>
-  
+
         <div class="text-center p-4">
-          <button type="submit" class="btn btn-primary mx-3">Save</button>
-          <button type="button" class="btn btn-primary mx-3" (click)="d('Close click')">Close</button>
+            <button type="submit" class="btn btn-primary mx-3">Save Changes</button>
+            <button type="button" class="btn btn-primary mx-3" (click)="c('Close click')">Close</button>
         </div>
-      </form>
+        </form>
     </div>
-  </ng-template>
-  
+</ng-template>
